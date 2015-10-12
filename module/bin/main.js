@@ -2,11 +2,46 @@ var http = require('http');
 var https = require('https');
 var crypto = require('crypto');
 var request = require('request');
+var fs = require('fs');
 var argv = process.argv.slice(2);
 var command = argv[0];
-
+var token = argv[1];
 if(command === 'authorize') {
     authorize();
+}
+else if(command === 'info') {
+    getAccountInfo();
+}
+else if(command === 'getFile') {
+    getFile();
+}
+function getFile() {
+    request.get('https://content.dropboxapi.com/1/files/auto/shivkanthb.pdf', {
+	headers: {Authorization: 'Bearer '+token},
+    }, function(error, response, body) {
+	if(error) {
+	    console.log("Error: "+error);
+	    return;
+	}
+	fs.writeFile("file.pdf", "My name is Oliver Queen", "binary", function(err) {
+	    if(err) {
+		console.log("Error: "+error);
+		return;
+	    }
+	    console.log("Downloaded file");
+	});
+    });
+}
+function getAccountInfo() {
+    request.get('https://api.dropboxapi.com/1/account/info',{
+	headers: {Authorization: 'Bearer ' + token},
+    }, function(error, response, body) {
+	if (error) {
+	    console.log("Error: "+error);
+	    return;
+	}
+	console.log(response['body']);
+    });
 }
 
 function authorize() {
@@ -17,7 +52,7 @@ function authorize() {
 	    client_id: 'tnhz6er0usemzyc'
 	}
     }, function(error,response,body){
-	console.log(response);
+	console.log(response.body);
     });
 }
 
