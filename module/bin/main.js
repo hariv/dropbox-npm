@@ -15,6 +15,26 @@ else if(command === 'info') {
 else if(command === 'getFile') {
     getFile();
 }
+else if(command === 'putFile') {
+    putFile();
+}
+
+function putFile() {
+    var file = argv[2];
+    var path = argv[3];
+    fs.readFile(file, 'utf8', function(err, data){
+	content = data;
+	console.log(data);
+	request.put('https://content.dropboxapi.com/1/files_put/auto/'+path, {
+	    headers: {Authorization: 'Bearer '+ token}, body: content}, function(error, response, body){
+		if(error) {
+		    console.log("Error: "+error);
+		    return;
+		}
+		console.log("Uploaded File");
+            });
+    });
+}
 function getFile() {
     request.get('https://content.dropboxapi.com/1/files/auto/shivkanthb.pdf', {
 	headers: {Authorization: 'Bearer '+token},
