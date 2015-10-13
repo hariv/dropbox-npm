@@ -21,6 +21,26 @@ else if(command === 'putFile') {
 else if(command === 'metadata') {
     getMetadata();
 }
+else if(command === 'copy') {
+    copy();
+}
+
+function copy() {
+    var formData = {
+	root: 'auto',
+	from_path: argv[2],
+	to_path: argv[3]
+    };
+    request.post('https://api.dropboxapi.com/1/fileops/copy', {
+	headers: {Authorization: 'Bearer '+token}, formData: formData}, function(error, response, body){
+	if(error) {
+	    console.log("Error: "+error);
+	    return;
+	}
+	console.log("Copied");
+	console.log(response['body']);
+    });
+}
 
 function getMetadata() {
     var path = argv[2];
@@ -65,6 +85,7 @@ function getFile() {
 		return;
 	    }
 	    console.log("Downloaded file");
+	    console.log(response['body']);
 	});
     });
 }
