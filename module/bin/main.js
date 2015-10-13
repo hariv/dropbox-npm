@@ -18,6 +18,22 @@ else if(command === 'getFile') {
 else if(command === 'putFile') {
     putFile();
 }
+else if(command === 'metadata') {
+    getMetadata();
+}
+
+function getMetadata() {
+    var path = argv[2];
+    request.get('https://api.dropboxapi.com/1/metadata/auto/'+path, {
+	headers: {Authorization: 'Bearer '+ token}, 
+    }, function(error, response, body){
+	if(error) {
+	    console.log("Error: "+error);
+	    return;
+	}
+	console.log(response['body']);
+    });
+}
 
 function putFile() {
     var file = argv[2];
