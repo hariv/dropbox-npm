@@ -21,14 +21,35 @@ else if(command === 'putFile') {
 else if(command === 'metadata') {
     getMetadata();
 }
-else if(command === 'copy') {
-    copy();
+else if(command === 'copyFile') {
+    copyFile();
 }
 else if(command === 'createFolder') {
     createFolder();
 }
 else if(command === 'deleteFile') {
     deleteFile();
+}
+else if(command === 'moveFile') {
+    moveFile();
+}
+
+function moveFile() {
+    var formData = {
+	root: 'auto',
+	from_path: argv[2],
+	to_path: argv[3]
+    };
+    request.post('https://api.dropboxapi.com/1/fileops/move', {
+	headers: {Authorization: 'Bearer '+token}, formData: formData}, function(error, response, data){
+	    if(error) {
+		console.log("Error: "+error);
+		return;
+	    }
+	    console.log("Moved");
+	    console.log(response['body']);
+	});
+    
 }
 
 function deleteFile() {
@@ -62,7 +83,7 @@ function createFolder() {
 	});
 }
 
-function copy() {
+function copyFile() {
     var formData = {
 	root: 'auto',
 	from_path: argv[2],
