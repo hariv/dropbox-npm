@@ -24,6 +24,43 @@ else if(command === 'metadata') {
 else if(command === 'copy') {
     copy();
 }
+else if(command === 'createFolder') {
+    createFolder();
+}
+else if(command === 'deleteFile') {
+    deleteFile();
+}
+
+function deleteFile() {
+    var formData = {
+	root: 'auto',
+	path: argv[2]
+    };
+    request.post('https://api.dropboxapi.com/1/fileops/delete', {
+	headers: {Authorization: 'Bearer '+token}, formData: formData}, function(error, response, data){
+	    if(error) {
+		console.log("Error: "+error);
+		return;
+	    }
+	    console.log("Deleted file");
+	    console.log(response['body']);
+	});
+}
+function createFolder() {
+    var formData = {
+	root: 'auto',
+	path: argv[2]
+    };
+    request.post('https://api.dropboxapi.com/1/fileops/create_folder', {
+	headers: {Authorization: 'Bearer '+token}, formData: formData}, function(error, response, body){
+	    if(error) {
+		console.log("Error: "+error);
+		return;
+	    }
+	    console.log("Created Folder");
+	    console.log(response['body']);
+	});
+}
 
 function copy() {
     var formData = {
@@ -33,13 +70,13 @@ function copy() {
     };
     request.post('https://api.dropboxapi.com/1/fileops/copy', {
 	headers: {Authorization: 'Bearer '+token}, formData: formData}, function(error, response, body){
-	if(error) {
-	    console.log("Error: "+error);
-	    return;
-	}
-	console.log("Copied");
-	console.log(response['body']);
-    });
+	    if(error) {
+		console.log("Error: "+error);
+		return;
+	    }
+	    console.log("Copied");
+	    console.log(response['body']);
+	});
 }
 
 function getMetadata() {
