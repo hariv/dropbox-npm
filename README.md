@@ -1,2 +1,2 @@
 # dropbox-npm
-## unofficial node wrapper supporting dropbox v2
+### unofficial node wrapper supporting dropbox v2.
