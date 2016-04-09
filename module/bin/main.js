@@ -10,30 +10,65 @@ var token = argv[1];
 function DropboxClient(token) {
     this.token = token;
     this.fileOperator = new FileOperations(this.token);
+    
     this.copy = function(from_path, to_path) {
-	this.fileOperator.performOperation('copy', from_path, to_path);
+	this.fileOperator.performOperation({action: 'copy', from_path: from_path, to_path: to_path});
     };
+
     this.createFolder = function(path) {
-	console.log("inside create folder");
-	this.fileOperator.performOperation('create_folder', path);
+	this.fileOperator.performOperation({action: 'create_folder', path: path});
+    }
+    
+    this.delete = function(path) {
+	this.fileOperator.performOperation({action: 'delete', path: path});
+    }
+    
+    this.getMetadata = function(path, include_media_info) {
+	this.fileOperator.performOperation({action: 'get_metadata', path: path, include_media_info: include_media_info});
+    }
+    
+    this.listFolder = function(path, recursive, include_media_info, include_deleted) {
+	this.fileOperator.performOperation({action: 'list_folder', path: path, recursive: recursive, include_media_info: include_media_info, include_deleted: include_deleted});
+    }
+    
+    this.listFolderContinue = function(cursor) {
+	this.fileOperator.performOperation({action: 'list_folder/continue', cursor: cursor});
+    }
+    
+    this.getLatestCursor = function(path, recursive, include_media_info, include_deleted) {
+	this.fileOperator.performOperation({action: 'list_folder/get_latest_cursor', path: path, recursive: recursive, include_media_info: include_media_info, include_deleted: include_deleted});
+    }
+
+    this.longPoll = function(cursor, timeout) {
+	this.fileOperator.performOperation({action: 'list_folder/longpoll', cursor: cursor, timeout: timeout});
+    }
+
+    this.listRevisions = function(path, limit) {
+	this.fileOperator.performOperation({action: 'list_revisions', path: path, limit: limit});
+    }
+
+    this.move = function(from_path, to_path) {
+	this.fileOperator.performOperation({action: 'move', from_path: from_path, to_path: to_path});
+    }
+    
+    this.permanentlyDelete = function(path) {
+	this.fileOperator.performOperation({action: 'permanently_delete', path: path});
+    }
+    
+    this.restore = function(path, rev) {
+	this.fileOperator.performOperation({action: 'restore', path: path, rev: rev});
     }
 }
 
 function FileOperations(token) {
     this.token = token;
     this.url = 'https://api.dropbox.com/2/files';
-    this.performOperation = function(action, path1, path2) {
-	var jsonPayload = new Object();
-	if(path2) {
-	    jsonPayload.from_path = path1;
-	    jsonPayload.to_path = path2;
-	}
-	else {
-	    jsonPayload.path = path1;
-	}
-	console.log(jsonPayload);
+    this.performOperation = function(jsonPayload) {
+	var action = jsonPayload.action;
+	delete jsonPayload.action;
+	jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
 	request({
-	    url: this.url+'/'+action,
+	    url: this.url+'/'+ action,
 	    method: 'POST',
 	    headers: {
 		'Authorization': 'Bearer '+this.token,
@@ -59,30 +94,35 @@ else if(command === 'copy') {
     dropboxClient.copy(argv[2], argv[3]);
 }
 else if(command === 'createFolder') {
-    console.log("Command is create folder");
     dropboxClient.createFolder(argv[2]);
 }
-else if(command === 'info') {
-    dropboxClient.accountInformant.getAccountInfo();
+else if(command === 'delete') {
+    dropboxClient.delete(argv[2]);
 }
-else if(command === 'getFile') {
-    getFile();
+else if(command === 'getMetadata') {
+    dropboxClient.getMetadata(argv[2], argv[3]);
 }
-else if(command === 'putFile') {
-    putFile();
+else if(command === 'listFolder') {
+    dropboxClient.listFolder(argv[2], argv[3], argv[4]);
 }
-else if(command === 'metadata') {
-    getMetadata();
+else if(command === 'listFolderContinue') {
+    dropboxClient.listFolder(argv[2]);
 }
-else if(command === 'copyFile') {
-    dropboxClient.fileOperator.performOperation('copy',argv[2], argv[3], argv[4]);
+else if(command === 'getLatestCursor') {
+    dropboxClient.getLatestCursor(argv[2], argv[3], argv[4]);
 }
-else if(command === 'createFolder') {
-    dropboxClient.fileOperator.performOperation('create_folder',argv[2], argv[3]);
+else if(command === 'longpoll') {
+    dropboxClient.longPoll(argv[2], argv[3]);
 }
-else if(command === 'deleteFile') {
-    dropboxClient.fileOperator.performOperation('delete', argv[2], argv[3]);
+else if(command === 'listRevisions') {
+    dropboxClient.listRevisions(argv[2], argv[3]);
 }
-else if(command === 'moveFile') {
-    dropboxClient.fileOperator.performOperation('move',argv[2], argv[3], argv[4]);
+else if(command === 'move') {
+    dropboxClient.move(argv[2], argv[3]);
+}
+else if(command === 'permanentlyDelete') {
+    dropboxClient.permanentlyDelete(argv[2]);
+}
+else if(command === 'restore') {
+    dropboxClient.restore(argv[2], argv[3]);
 }
