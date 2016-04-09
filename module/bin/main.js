@@ -10,53 +10,57 @@ var token = argv[1];
 function DropboxClient(token) {
     this.token = token;
     this.fileOperator = new FileOperations(this.token);
-    this.accountInformant = new AccountInformation(this.token);
-}
-
-function AccountInformation(token) {
-    this.token = token;
-    this.url = 'https://api.dropboxapi.com/1/account/info';
-    
-    this.getAccountInfo = function() {
-	request.get(this.url, {
-	    headers: {Authorization: 'Bearer '+this.token}}, function(error, response, data){	
-		if(error) {
-		    console.log('Error '+error);
-		    return;
-		}
-		console.log(response['body']);
-	    });
+    this.copy = function(from_path, to_path) {
+	this.fileOperator.performOperation('copy', from_path, to_path);
     };
+    this.createFolder = function(path) {
+	console.log("inside create folder");
+	this.fileOperator.performOperation('create_folder', path);
+    }
 }
 
 function FileOperations(token) {
     this.token = token;
-    this.url = 'https://api.dropbox.com/1/fileops';
-    this.formData = new Object();
- 
-    this.performOperation = function(action, root, path1, path2) {
-	this.formData.root = root;
+    this.url = 'https://api.dropbox.com/2/files';
+    this.performOperation = function(action, path1, path2) {
+	var jsonPayload = new Object();
 	if(path2) {
-	    this.formData.from_path = path1;
-	    this.formData.to_path = path2;
+	    jsonPayload.from_path = path1;
+	    jsonPayload.to_path = path2;
 	}
 	else {
-	    this.formData.path = path1;
+	    jsonPayload.path = path1;
 	}
-	request.post(this.url+'/'+action, {
-	    headers: {Authorization: 'Bearer '+this.token}, formData: this.formData}, function(error, response, data){
-		if(error) {
-		    console.log("Error "+error);
-		    return;
-		}
-		console.log(action+' done');
-		console.log(response['body']);
-	    });
+	console.log(jsonPayload);
+	request({
+	    url: this.url+'/'+action,
+	    method: 'POST',
+	    headers: {
+		'Authorization': 'Bearer '+this.token,
+		'Content-Type': 'application/json'
+	    },
+	    json: jsonPayload
+	}, function(error, response, data){
+	    if(error) {
+		console.log("Error "+error);
+		return;
+	    }
+	    console.log(action+' done');
+	    console.log(response['body']);
+	});
     }
 }
+
 var dropboxClient = new DropboxClient(token);
 if(command === 'authorize') {
     authorize();
+}
+else if(command === 'copy') {
+    dropboxClient.copy(argv[2], argv[3]);
+}
+else if(command === 'createFolder') {
+    console.log("Command is create folder");
+    dropboxClient.createFolder(argv[2]);
 }
 else if(command === 'info') {
     dropboxClient.accountInformant.getAccountInfo();
@@ -81,72 +85,4 @@ else if(command === 'deleteFile') {
 }
 else if(command === 'moveFile') {
     dropboxClient.fileOperator.performOperation('move',argv[2], argv[3], argv[4]);
-}
-
-function getMetadata() {
-    var path = argv[2];
-    request.get('https://api.dropboxapi.com/1/metadata/auto/'+path, {
-	headers: {Authorization: 'Bearer '+ token}, 
-    }, function(error, response, body){
-	if(error) {
-	    console.log("Error: "+error);
-	    return;
-	}
-	console.log(response['body']);
-    });
-}
-
-function putFile() {
-    var file = argv[2];
-    var path = argv[3];
-    fs.readFile(file, 'utf8', function(err, data){
-	content = data;
-	console.log(data);
-	request.put('https://content.dropboxapi.com/1/files_put/auto/'+path, {
-	    headers: {Authorization: 'Bearer '+ token}, body: content}, function(error, response, body){
-		if(error) {
-		    console.log("Error: "+error);
-		    return;
-		}
-		console.log("Uploaded File");
-            });
-    });
-}
-function getFile() {
-    request.get('https://content.dropboxapi.com/1/files/auto/shivkanthb.pdf', {
-	headers: {Authorization: 'Bearer '+token},
-    }, function(error, response, body) {
-	if(error) {
-	    console.log("Error: "+error);
-	    return;
-	}
-	fs.writeFile("file.pdf", "My name is Oliver Queen", "binary", function(err) {
-	    if(err) {
-		console.log("Error: "+error);
-		return;
-	    }
-	    console.log("Downloaded file");
-	    console.log(response['body']);
-	});
-    });
-}
-
-function authorize() {
-    var csrfToken = generateCSRFToken();
-    request.get('https://www.dropbox.com/1/oauth2/authorize',{
-	form: {
-	    response_type: 'code',
-	    client_id: 'tnhz6er0usemzyc'
-	}
-    }, function(error,response,body){
-	console.log(response.body);
-    });
-}
-
-function generateCSRFToken() {
-    return crypto.randomBytes(18).toString('base64').replace(/\//g, '-').replace(/\+/g, '_');
-}
-
-function generateRedirectURI() {
-    
 }
