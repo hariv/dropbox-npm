@@ -10,7 +10,9 @@ var token = argv[1];
 function DropboxClient(token) {
     this.token = token;
     this.fileOperator = new FileOperations(this.token);
-    
+
+    this.userOperator = new UsersOperations(this.token);
+
     this.copy = function(from_path, to_path) {
 	this.fileOperator.performOperation({action: 'copy', from_path: from_path, to_path: to_path});
     };
@@ -58,6 +60,20 @@ function DropboxClient(token) {
     this.restore = function(path, rev) {
 	this.fileOperator.performOperation({action: 'restore', path: path, rev: rev});
     }
+
+    // user operations
+
+    this.getCurrentAccount = function () {
+        this.userOperator.performOperation({action:'get_current_account'});
+    }
+
+    this.getSpaceUsage = function () {
+        this.userOperator.performOperation({action:'get_space_usage'});
+    }
+    
+    this.getAccount = function (account_id) {
+        this.userOperator.performOperation({action:'get_account',account_id:account_id});
+    }
 }
 
 function FileOperations(token) {
@@ -85,6 +101,49 @@ function FileOperations(token) {
 	});
     }
 }
+
+function UsersOperations(token) {
+    this.token = token;
+    this.url = 'https://api.dropbox.com/2/users';
+    this.performOperation = function(jsonPayload) {
+        var action = jsonPayload.action;
+        delete jsonPayload.action;
+        jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
+        if(Object.keys(jsonPayload).length == 0)
+        {
+            var options = {
+                url: this.url+'/'+ action,
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + this.token
+                }
+            };
+        }
+        else
+        {
+            var options = {
+                url: this.url+'/'+ action,
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer '+this.token,
+                     'Content-Type': 'application/json'
+                },
+                 json: jsonPayload
+            };
+        }
+
+        request(options, function(error, response, data){
+            if(error) {
+                console.log("Error "+error);
+                return;
+            }
+            console.log(action+' done');
+            console.log(response['body']);
+        });
+    }
+}
+
+
 
 var dropboxClient = new DropboxClient(token);
 if(command === 'authorize') {
@@ -126,3 +185,16 @@ else if(command === 'permanentlyDelete') {
 else if(command === 'restore') {
     dropboxClient.restore(argv[2], argv[3]);
 }
+
+//user commands
+else if(command === 'getCurrentAccount') {
+    dropboxClient.getCurrentAccount();
+}
+else if(command === 'getSpaceUsage') {
+    dropboxClient.getSpaceUsage();
+}
+else if(command === 'getAccount') {
+    dropboxClient.getAccount(argv[2]);
+}
+
+
