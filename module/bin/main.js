@@ -121,6 +121,30 @@ function DropboxClient(token) {
     this.getSharedLinkFile = function(url, path, link_password) {
         this.shareOperator.performOperation({action: 'get_shared_link_file', url:url,path:path,link_password:link_password});
     }
+
+    this.getSharedLinkMetadata = function (url, path, link_password) {
+        this.shareOperator.performOperation({action: 'get_shared_link_metadata',url:url,path:path,link_password:link_password})
+    }
+
+    this.getSharedLinks = function(path) {
+        this.shareOperator.performOperation({action: 'get_shared_links',path:path});
+    }
+
+    this.listFolderMembers = function(shared_folder_id, actions) {
+        var payload = {
+            action: 'list_folder_members',
+            shared_folder_id: shared_folder_id,
+            actions: []
+        };
+        for(var i = 0; i<actions.length; i++) {
+            payload.actions.push({'.tag': actions[i]});
+        }
+        this.shareOperator.performOperation(payload);
+    }
+    
+    this.listFolderMembersContinue = function (cursor) {
+        this.shareOperator.performOperation({action: 'list_folder_members/continue',cursor:cursor});
+    }
 }
 
 function FileOperations(token) {
@@ -159,11 +183,8 @@ function ShareOperations(token) {
 
      if(action=='get_shared_link_file')
      {
-         console.log("DOPE");
-
          this.url= 'https://content.dropboxapi.com/2/sharing';
          jsonPayload=JSON.stringify(jsonPayload);
-         console.log(jsonPayload);
          var options= {
              url: this.url+'/'+ action,
              method: 'POST',
@@ -193,11 +214,11 @@ function ShareOperations(token) {
             }
             console.log(action+' done');
 
-        if(action=='get_shared_link_file')
-            {
-                console.log(response['caseless']['dict']['dropbox-api-result']);
-            }
-        else
+        // if(action=='get_shared_link_file')
+        //     {
+        //         console.log(response['caseless']['dict']['dropbox-api-result']);
+        //     }
+        // else
             console.log(response['body']);
         });
     }
@@ -275,7 +296,7 @@ else if(command === 'listFolder') {
 }
 else if(command === 'listFolderContinue') {
     preprocessInput();
-    dropboxClient.listFolder(argv[2]);
+    dropboxClient.listFolderContinue(argv[2]);
 }
 else if(command === 'getLatestCursor') {
     preprocessInput();
@@ -360,4 +381,28 @@ else if(command === 'getFolderMetadata') {
 else if(command === 'getSharedLinkFile') {
     preprocessInput();
     dropboxClient.getSharedLinkFile(argv[2], argv[3], argv[4]);
+}
+
+else if(command === 'getSharedLinkMetadata') {
+    preprocessInput();
+    dropboxClient.getSharedLinkMetadata(argv[2], argv[3], argv[4]);
+}
+
+else if(command === 'getSharedLinks') {
+    preprocessInput();
+    dropboxClient.getSharedLinks(argv[2]);
+}
+
+else if(command === 'listFolderMembers') {
+    preprocessInput();
+    var actions = [];
+    for(var i = 3; i< argv.length; i++) {
+        actions.push(argv[i]);
+    }
+    dropboxClient.listFolderMembers(argv[2], actions);
+}
+
+else if(command === 'listFolderMembersContinue') {
+    preprocessInput();
+    dropboxClient.listFolderMembersContinue(argv[2]);
 }
