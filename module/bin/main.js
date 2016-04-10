@@ -233,7 +233,17 @@ function DropboxClient(token) {
         this.shareOperator.performOperation({action:'revoke_shared_link',url:url});
     }
 
+    this.transferFolder = function (shared_folder_id,to_dropbox_id) {
+        this.shareOperator.performOperation({action: 'transfer_folder',shared_folder_id:shared_folder_id,to_dropbox_id:to_dropbox_id });
+    }
 
+    this.unmountFolder = function (shared_folder_id) {
+        this.shareOperator.performOperation({action: 'unmount_folder',shared_folder_id:shared_folder_id});
+    }
+
+    this.unshareFolder = function (shared_folder_id, leave_a_copy) {
+        this.shareOperator.performOperation({action: 'unshare_folder',shared_folder_id:shared_folder_id, leave_a_copy:leave_a_copy});
+    }
 
 }
 
@@ -555,3 +565,22 @@ else if(command === 'revokeSharedLink') {
     dropboxClient.revokeSharedLink(argv[2]);
 }
 
+else if(command === 'revokeSharedLink') {
+    preprocessInput();
+    dropboxClient.revokeSharedLink(argv[2]);
+}
+
+else if(command === 'transferFolder') {
+    preprocessInput();
+    dropboxClient.transferFolder(argv[2],argv[3]);
+}
+
+else if(command === 'unmountFolder') {
+    preprocessInput();
+    dropboxClient.unmountFolder(argv[2]);
+}
+
+else if(command === 'unshareFolder') {
+    preprocessInput();
+    dropboxClient.unshareFolder(argv[2],argv[3]);
+}
