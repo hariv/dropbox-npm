@@ -193,6 +193,44 @@ function DropboxClient(token) {
     this.relinquishFolderMembership = function (shared_folder_id) {
         this.shareOperator.performOperation({action:'relinquish_folder_membership',shared_folder_id:shared_folder_id});
     }
+    
+    this.removeFolderMember = function (shared_folder_id,member_type,member_val,leave_a_copy) {
+        if(member_type=='other'){
+            var payload = {
+                action: 'remove_folder_member',
+                member: {'.tag':member_type},
+                leave_a_copy:leave_a_copy
+            }
+        }
+        else
+        {
+            if(member_type=="dropbox_id")
+            {
+                var payload = {
+                    action: 'remove_folder_member',
+                    member: {'.tag':member_type,dropbox_id:member_val},
+                    leave_a_copy:leave_a_copy
+                }
+            }
+            else
+            {
+                var payload = {
+                    action: 'remove_folder_member',
+                    member: {'.tag':member_type,email:member_val},
+                    leave_a_copy:leave_a_copy
+                }
+            }
+
+        }
+        this.shareOperator.performOperation(payload);
+
+    }
+
+    this.revokeSharedLink = function (url) {
+        this.shareOperator.performOperation({action:'revoke_shared_link',url:url});
+    }
+
+
 
 }
 
@@ -503,3 +541,14 @@ else if(command === 'relinquishFolderMembership') {
     preprocessInput();
     dropboxClient.relinquishFolderMembership(argv[2]);
 }
+
+else if(command === 'removeFolderMember') {
+    preprocessInput();
+    dropboxClient.removeFolderMember(argv[2],argv[3],argv[4],argv[5]);
+}
+
+else if(command === 'revokeSharedLink') {
+    preprocessInput();
+    dropboxClient.revokeSharedLink(argv[2]);
+}
+
