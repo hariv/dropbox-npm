@@ -198,6 +198,7 @@ function DropboxClient(token) {
         if(member_type=='other'){
             var payload = {
                 action: 'remove_folder_member',
+                shared_folder_id:shared_folder_id,
                 member: {'.tag':member_type},
                 leave_a_copy:leave_a_copy
             }
@@ -208,6 +209,7 @@ function DropboxClient(token) {
             {
                 var payload = {
                     action: 'remove_folder_member',
+                    shared_folder_id:shared_folder_id,
                     member: {'.tag':member_type,dropbox_id:member_val},
                     leave_a_copy:leave_a_copy
                 }
@@ -216,6 +218,7 @@ function DropboxClient(token) {
             {
                 var payload = {
                     action: 'remove_folder_member',
+                    shared_folder_id:shared_folder_id,
                     member: {'.tag':member_type,email:member_val},
                     leave_a_copy:leave_a_copy
                 }
