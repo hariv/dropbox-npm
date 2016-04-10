@@ -81,6 +81,28 @@ function DropboxClient(token) {
     this.getAccountBatch = function(account_ids) {
         this.userOperator.performOperation({action:'get_account_batch',account_ids:account_ids});
     }
+
+    // share operations
+    
+    this.checkJobStatus = function(async_job_id) {
+	this.shareOperator.performOperation({action: 'check_job_status', async_job_id: async_job_id});
+    }
+    
+    this.checkShareJobStatus = function(async_job_id) {
+	this.shareOperator.performOperation({action: 'check_share_job_status', async_job_id: async_job_id});
+    }
+
+    this.createSharedLink = function(path, short_url, pending_upload) {
+	if(pending_upload)
+	    this.shareOperator.performOperation({action: 'create_shared_link', short_url: short_url, pending_upload: {.tag: pending_upload}});
+	else
+	    this.shareOperator.performOperation({action: 'create_shared_link', short_url: short_url});
+    }
+
+    this.createSharedLinkWIthSettings = function(path, requested_visibility, link_password, expires) {
+	if(requested_visibility) 
+	    this.shareOperator.performOperation({action: 'create_shared_link_with_settings', requested_visibility: {.tag: requested_visibility}, link_password: link_password, expires: expires});
+    }
 }
 
 function FileOperations(token) {
@@ -116,7 +138,22 @@ function ShareOperations(token) {
 	var action = jsonPayload.action;
 	delete jsonPayload.action;
 	jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
-	
+	request({
+            url: this.url+'/'+ action,
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer '+this.token,
+                'Content-Type': 'application/json'
+            },
+            json: jsonPayload
+        }, function(error, response, data){
+            if(error) {
+                console.log("Error "+error);
+                return;
+            }
+            console.log(action+' done');
+            console.log(response['body']);
+        });
     }
 }
 
@@ -127,8 +164,7 @@ function UsersOperations(token) {
         var action = jsonPayload.action;
         delete jsonPayload.action;
         jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
-        if(Object.keys(jsonPayload).length == 0)
-        {
+        if(Object.keys(jsonPayload).length == 0) {
             var options = {
                 url: this.url+'/'+ action,
                 method: 'POST',
@@ -137,8 +173,7 @@ function UsersOperations(token) {
                 }
             };
         }
-        else
-        {
+        else {
             var options = {
                 url: this.url+'/'+ action,
                 method: 'POST',
@@ -149,7 +184,6 @@ function UsersOperations(token) {
                  json: jsonPayload
             };
         }
-
         request(options, function(error, response, data){
             if(error) {
                 console.log("Error "+error);
@@ -248,5 +282,23 @@ else if(command === 'getAccountBatch') {
     }
     dropboxClient.getAccountBatch(account_ids);
 }
+// share operations
+else if(command === 'checkJobStatus') {
+    preprocessInput();
+    dropboxClient.checkJobStatus(argv[2]);
+}
 
+else if(command === 'checkShareJobStatus') {
+    preprocessInput();
+    dropboxClient.checkShareJobStatus(argv[2]);
+}
 
+else if(command === 'createSharedLink') {
+    preprocessInput();
+    dropboxClient.createSharedLink(argv[2], argv[3], argv[4]);
+}
+
+else if(command === 'createSharedLinkWithSettings') {
+    preprocessInput();
+    dropboxClient.createSharedLinkWithSettings(argv[2], argv[3], argv[4], argv[5]);    
+}
