@@ -94,16 +94,16 @@ function DropboxClient(token) {
 
     this.createSharedLink = function(path, short_url, pending_upload) {
 	if(pending_upload)
-	    this.shareOperator.performOperation({action: 'create_shared_link', path: path, short_url: short_url, pending_upload: {.tag: pending_upload}});
+	    this.shareOperator.performOperation({action: 'create_shared_link', path: path, short_url: short_url, pending_upload: {'.tag': pending_upload}});
 	else
 	    this.shareOperator.performOperation({action: 'create_shared_link', path: path, short_url: short_url});
     }
 
     this.createSharedLinkWithSettings = function(path, requested_visibility, link_password, expires) {
 	if(requested_visibility) 
-	    this.shareOperator.performOperation({action: 'create_shared_link_with_settings', path: path, requested_visibility: {.tag: requested_visibility}, link_password: link_password, expires: expires});
+	    this.shareOperator.performOperation({action: 'create_shared_link_with_settings', path: path, requested_visibility: {'.tag': requested_visibility}, link_password: link_password, expires: expires});
 	else
-	    this.shareOperator.performOperation({action: 'create_shared_link_with_settings', path: path, link_password, expires: expires});
+	    this.shareOperator.performOperation({action: 'create_shared_link_with_settings', path: path, link_password:link_password, expires: expires});
     }
     
     this.getFolderMetadata = function(shared_folder_id, actions) {
@@ -113,11 +113,14 @@ function DropboxClient(token) {
 	    actions: []
 	}; 
 	for(var i = 0; i<actions.length; i++) {
-	    payload.actions.push({.tag: actions[i]});
+	    payload.actions.push({'.tag': actions[i]});
 	}
 	this.shareOperator.performOperation(payload);
     }
-    
+
+    this.getSharedLinkFile = function(url, path, link_password) {
+        this.shareOperator.performOperation({action: 'get_shared_link_file', url:url,path:path,link_password:link_password});
+    }
 }
 
 function FileOperations(token) {
@@ -153,20 +156,48 @@ function ShareOperations(token) {
 	var action = jsonPayload.action;
 	delete jsonPayload.action;
 	jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
-	request({
-            url: this.url+'/'+ action,
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer '+this.token,
-                'Content-Type': 'application/json'
-            },
-            json: jsonPayload
-        }, function(error, response, data){
+
+     if(action=='get_shared_link_file')
+     {
+         console.log("DOPE");
+
+         this.url= 'https://content.dropboxapi.com/2/sharing';
+         jsonPayload=JSON.stringify(jsonPayload);
+         console.log(jsonPayload);
+         var options= {
+             url: this.url+'/'+ action,
+             method: 'POST',
+             headers: {
+                 'Authorization': 'Bearer '+this.token,
+                 'Dropbox-API-Arg': jsonPayload
+             }
+         };
+     }
+        else
+     {
+         var options= {
+             url: this.url+'/'+ action,
+             method: 'POST',
+             headers: {
+                 'Authorization': 'Bearer '+this.token,
+                 'Content-Type': 'application/json'
+             },
+             json: jsonPayload
+         };
+     }
+
+	request(options, function(error, response, data){
             if(error) {
                 console.log("Error "+error);
                 return;
             }
             console.log(action+' done');
+
+        if(action=='get_shared_link_file')
+            {
+                console.log(response['caseless']['dict']['dropbox-api-result']);
+            }
+        else
             console.log(response['body']);
         });
     }
@@ -324,4 +355,9 @@ else if(command === 'getFolderMetadata') {
 	actions.push(argv[i]);
     }
     dropboxClient.getFolderMetadata(argv[2], actions);
+}
+
+else if(command === 'getSharedLinkFile') {
+    preprocessInput();
+    dropboxClient.getSharedLinkFile(argv[2], argv[3], argv[4]);
 }
