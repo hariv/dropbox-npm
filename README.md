@@ -1,11 +1,14 @@
-![Nodedropbox]
+#Dropbox Node SDK
 A JavaScript wrapper for [dropbox-api v2] (https://www.dropbox.com/developers/documentation/http/documentation).
 
 #How to use
 
 To use the sdk, import the module and create an instance of the DropboxClient object with your [access token] (https://www.dropbox.com/developers/apps).
 
-Usage: var dropboxClient = new DropboxClient(token);
+###Usage: 
+```javascript
+var dropboxClient = new DropboxClient(token);
+```
 
 This dropboxClient object provides a set of methods to access the endpoints mentioned below:
 
