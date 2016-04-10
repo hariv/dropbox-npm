@@ -10,8 +10,8 @@ var token = argv[1];
 function DropboxClient(token) {
     this.token = token;
     this.fileOperator = new FileOperations(this.token);
-
     this.userOperator = new UsersOperations(this.token);
+    this.shareOperator = new ShareOperations(this.token);
 
     this.copy = function(from_path, to_path) {
 	this.fileOperator.performOperation({action: 'copy', from_path: from_path, to_path: to_path});
@@ -106,6 +106,17 @@ function FileOperations(token) {
     }
 }
 
+function ShareOperations(token) {
+    this.token = token;
+    this.url = 'https://api.dropbox.com/2/sharing';
+    this.performOperation = function(jsonPayload) {
+	var action = jsonPayload.action;
+	delete jsonPayload.action;
+	jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
+	
+    }
+}
+
 function UsersOperations(token) {
     this.token = token;
     this.url = 'https://api.dropbox.com/2/users';
@@ -147,57 +158,78 @@ function UsersOperations(token) {
     }
 }
 
-
+function preprocessInput() {
+    for(var i = 0; i < argv.length; i++) {
+	if(argv[i] === 'DEFAULT')
+	    argv[i] = undefined;
+    }
+}
 
 var dropboxClient = new DropboxClient(token);
 if(command === 'authorize') {
     authorize();
 }
 else if(command === 'copy') {
+    preprocessInput();
     dropboxClient.copy(argv[2], argv[3]);
 }
 else if(command === 'createFolder') {
+    preprocessInput();
     dropboxClient.createFolder(argv[2]);
 }
 else if(command === 'delete') {
+    preprocessInput();
     dropboxClient.delete(argv[2]);
 }
 else if(command === 'getMetadata') {
+    preprocessInput();
+    console.log(argv[3]);
     dropboxClient.getMetadata(argv[2], argv[3]);
 }
 else if(command === 'listFolder') {
-    dropboxClient.listFolder(argv[2], argv[3], argv[4]);
+    preprocessInput();
+    dropboxClient.listFolder(argv[2], argv[3], argv[4], argv[5]);
 }
 else if(command === 'listFolderContinue') {
+    preprocessInput();
     dropboxClient.listFolder(argv[2]);
 }
 else if(command === 'getLatestCursor') {
+    preprocessInput();
     dropboxClient.getLatestCursor(argv[2], argv[3], argv[4]);
 }
 else if(command === 'longpoll') {
+    preprocessInput();
     dropboxClient.longPoll(argv[2], argv[3]);
 }
 else if(command === 'listRevisions') {
+    preprocessInput();
     dropboxClient.listRevisions(argv[2], argv[3]);
 }
 else if(command === 'move') {
+    preprocessInput();
     dropboxClient.move(argv[2], argv[3]);
 }
 else if(command === 'permanentlyDelete') {
+    preprocessInput();
     dropboxClient.permanentlyDelete(argv[2]);
 }
 else if(command === 'restore') {
+    preprocessInput();
     dropboxClient.restore(argv[2], argv[3]);
 }
 
 //user commands
 else if(command === 'getCurrentAccount') {
+    preprocessInput();
     dropboxClient.getCurrentAccount();
 }
 else if(command === 'getSpaceUsage') {
+    preprocessInput();
     dropboxClient.getSpaceUsage();
 }
 else if(command === 'getAccount') {
+    preprocessInput();
     dropboxClient.getAccount(argv[2]);
 }
 else if(command === 'getAccountBatch') {
