@@ -74,6 +74,10 @@ function DropboxClient(token) {
     this.getAccount = function (account_id) {
         this.userOperator.performOperation({action:'get_account',account_id:account_id});
     }
+
+    this.getAccountBatch = function(account_ids) {
+        this.userOperator.performOperation({action:'get_account_batch',account_ids:account_ids});
+    }
 }
 
 function FileOperations(token) {
@@ -195,6 +199,14 @@ else if(command === 'getSpaceUsage') {
 }
 else if(command === 'getAccount') {
     dropboxClient.getAccount(argv[2]);
+}
+else if(command === 'getAccountBatch') {
+    var account_ids=[];
+    for(var i=2;i< argv.length;i++)
+    {
+        account_ids.push(argv[i]);
+    }
+    dropboxClient.getAccountBatch(account_ids);
 }
 
 
