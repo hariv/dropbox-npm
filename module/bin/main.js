@@ -60,6 +60,9 @@ function DropboxClient(token) {
     this.restore = function(path, rev) {
 	this.fileOperator.performOperation({action: 'restore', path: path, rev: rev});
     }
+    this.search = function(path, query, start, max_results, mode) {
+        this.fileOperator.performOperation(({action:'search',path:path,query:query,start:start,max_results:max_results,mode:mode}));
+    }
 
     // user operations
 
@@ -217,6 +220,11 @@ else if(command === 'permanentlyDelete') {
 else if(command === 'restore') {
     preprocessInput();
     dropboxClient.restore(argv[2], argv[3]);
+}
+
+else if(command === 'search') {
+    preprocessInput();
+    dropboxClient.search(argv[2], argv[3],argv[4],argv[5],argv[6]);
 }
 
 //user commands
