@@ -94,15 +94,30 @@ function DropboxClient(token) {
 
     this.createSharedLink = function(path, short_url, pending_upload) {
 	if(pending_upload)
-	    this.shareOperator.performOperation({action: 'create_shared_link', short_url: short_url, pending_upload: {.tag: pending_upload}});
+	    this.shareOperator.performOperation({action: 'create_shared_link', path: path, short_url: short_url, pending_upload: {.tag: pending_upload}});
 	else
-	    this.shareOperator.performOperation({action: 'create_shared_link', short_url: short_url});
+	    this.shareOperator.performOperation({action: 'create_shared_link', path: path, short_url: short_url});
     }
 
-    this.createSharedLinkWIthSettings = function(path, requested_visibility, link_password, expires) {
+    this.createSharedLinkWithSettings = function(path, requested_visibility, link_password, expires) {
 	if(requested_visibility) 
-	    this.shareOperator.performOperation({action: 'create_shared_link_with_settings', requested_visibility: {.tag: requested_visibility}, link_password: link_password, expires: expires});
+	    this.shareOperator.performOperation({action: 'create_shared_link_with_settings', path: path, requested_visibility: {.tag: requested_visibility}, link_password: link_password, expires: expires});
+	else
+	    this.shareOperator.performOperation({action: 'create_shared_link_with_settings', path: path, link_password, expires: expires});
     }
+    
+    this.getFolderMetadata = function(shared_folder_id, actions) {
+	var payload = {
+	    action: 'get_folder_metadata',
+	    shared_folder_id: shared_folder_id,
+	    actions: []
+	}; 
+	for(var i = 0; i<actions.length; i++) {
+	    payload.actions.push({.tag: actions[i]});
+	}
+	this.shareOperator.performOperation(payload);
+    }
+    
 }
 
 function FileOperations(token) {
@@ -276,8 +291,7 @@ else if(command === 'getAccount') {
 }
 else if(command === 'getAccountBatch') {
     var account_ids=[];
-    for(var i=2;i< argv.length;i++)
-    {
+    for(var i=2;i< argv.length;i++) {
         account_ids.push(argv[i]);
     }
     dropboxClient.getAccountBatch(account_ids);
@@ -301,4 +315,13 @@ else if(command === 'createSharedLink') {
 else if(command === 'createSharedLinkWithSettings') {
     preprocessInput();
     dropboxClient.createSharedLinkWithSettings(argv[2], argv[3], argv[4], argv[5]);    
+}
+
+else if(command === 'getFolderMetadata') {
+    preprocessInput();
+    var actions = [];
+    for(var i = 3; i< argv.length; i++) {
+	actions.push(argv[i]);
+    }
+    dropboxClient.getFolderMetadata(argv[2], actions);
 }
