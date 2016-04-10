@@ -145,6 +145,55 @@ function DropboxClient(token) {
     this.listFolderMembersContinue = function (cursor) {
         this.shareOperator.performOperation({action: 'list_folder_members/continue',cursor:cursor});
     }
+
+    this.listFolders = function(limit, actions) {
+        var payload = {
+            action: 'list_folders',
+            limit: limit,
+            actions: []
+        };
+        for(var i = 0; i<actions.length; i++) {
+            payload.actions.push({'.tag': actions[i]});
+        }
+        this.shareOperator.performOperation(payload);
+    }
+
+    this.listFoldersContinue = function (cursor) {
+        this.shareOperator.performOperation({action: 'list_folders/continue',cursor:cursor});
+    }
+
+    this.listMountableFolders = function(limit, actions) {
+        var payload = {
+            action: 'list_mountable_folders',
+            limit: limit,
+            actions: []
+        };
+        for(var i = 0; i<actions.length; i++) {
+            payload.actions.push({'.tag': actions[i]});
+        }
+        this.shareOperator.performOperation(payload);
+    }
+
+    this.listMountableFoldersContinue = function (cursor) {
+        this.shareOperator.performOperation({action: 'list_mountable_folders/continue',cursor:cursor});
+    }
+
+    this.listSharedLinks = function(path, cursor,direct_only) {
+        this.shareOperator.performOperation({action: 'list_shared_links',path:path,cursor:cursor,direct_only:direct_only});
+    }
+    
+    this.modifySharedLinkSettings = function (url, requested_visibility,link_password, expires) {
+        this.shareOperator.performOperation({action: 'modify_shared_link_settings', url:url,link_password:link_password,expires:expires});
+    }
+
+    this.mountFolder = function (shared_folder_id) {
+        this.shareOperator.performOperation({action:'mount_folder',shared_folder_id:shared_folder_id});
+    }
+
+    this.relinquishFolderMembership = function (shared_folder_id) {
+        this.shareOperator.performOperation({action:'relinquish_folder_membership',shared_folder_id:shared_folder_id});
+    }
+
 }
 
 function FileOperations(token) {
@@ -405,4 +454,52 @@ else if(command === 'listFolderMembers') {
 else if(command === 'listFolderMembersContinue') {
     preprocessInput();
     dropboxClient.listFolderMembersContinue(argv[2]);
+}
+
+else if(command === 'listFolders') {
+    preprocessInput();
+    var actions = [];
+    for(var i = 3; i< argv.length; i++) {
+        actions.push(argv[i]);
+    }
+    dropboxClient.listFolders(argv[2], actions);
+}
+
+else if(command === 'listFoldersContinue') {
+    preprocessInput();
+    dropboxClient.listFoldersContinue(argv[2]);
+}
+
+else if(command === 'listMountableFolders') {
+    preprocessInput();
+    var actions = [];
+    for(var i = 3; i< argv.length; i++) {
+        actions.push(argv[i]);
+    }
+    dropboxClient.listFolders(argv[2], actions);
+}
+
+else if(command === 'listMountableFoldersContinue') {
+    preprocessInput();
+    dropboxClient.listMountableFoldersContinue(argv[2]);
+}
+
+else if(command === 'listSharedLinks') {
+    preprocessInput();
+    dropboxClient.listSharedLinks(argv[2],argv[3],argv[4]);
+}
+
+else if(command === 'modifySharedLinkSettings') {
+    preprocessInput();
+    dropboxClient.modifySharedLinkSettings(argv[2],argv[3],argv[4],argv[5]);
+}
+
+else if(command === 'mountFolder') {
+    preprocessInput();
+    dropboxClient.mountFolder(argv[2]);
+}
+
+else if(command === 'relinquishFolderMembership') {
+    preprocessInput();
+    dropboxClient.relinquishFolderMembership(argv[2]);
 }
