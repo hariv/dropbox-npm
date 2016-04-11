@@ -16,7 +16,7 @@ This dropboxClient object provides a set of methods to access the endpoints ment
 ## File operations
 - **copy**, dropboxClient.copy(from_path, to_path). Copies file from the from_path to the to_path. The to_path will have the name of the newly created file/folder
 - **create_folder**, dropboxClient.createFolder(path). Creates a new folder at the specified path.
-- **delete**, dropboxClient.delete(). Deletes the file in the specified path
+- **delete**, dropboxClient.delete(path). Deletes the file in the specified path
 - **list_folder**, dropboxClient.listFolder(path, recursiveFlag, mediaInfoFlag, deletedFlag). This lists all folders in path. Other parameters are boolean optionals that corresponds to whether or not recursive listing is required, media information is required and if deleted files are to be listed. The return value returns a cursor and a flag has_more that indicates if the listing is complete or not.
 - **list_folder/continue**, dropboxClient.listFolderContinue(cursor). This continues the listing based on the cursor returned by the list_folder call.
 - **list_folder/get_latest_cursor**, dropboxClient.getLatestCursor(path, recursiveFlag, mediaInfoFlag, deletedFlag). This lists the last set among the list of folders under path. Parameters are identical to those in list_folder.
@@ -30,8 +30,8 @@ This dropboxClient object provides a set of methods to access the endpoints ment
 ## Share Operations
 - **check_job_status**, dropboxClient.checkJobStatus(async_job_id). Returns a json object having details of a particular job.
 - **check_share_job_status**, dropboxClient.checkShareJobStatus(async_job_id). Returns a json object having details of a particlar shared job.
-- **create_shared_link**, 
-- **create_shared_link_with_settings**
+- **create_shared_link**, dropboxClient.createSharedLink(path, short_url, pending_upload). Returns a shareable URL for the specified path. short_url is a boolean value that would shorten the generated url if set to true.
+- **create_shared_link_with_settings**, dropboxClient.createSharedLinkWithSettings(path, requested_visibility, link_password, expires). This is similar to the above method, with some optional customization for the visibility, a password to access the link, and a time for which the link exists as specified by the corresponding arguments. The requested_visibility can be set to public, team_only or password, which causes the link to be available to all, to shared members and to those with access to the password.
 - **get_folder_metadata**
 - **get_shared_link_file**
 
