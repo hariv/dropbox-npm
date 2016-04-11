@@ -195,38 +195,19 @@ function DropboxClient(token) {
     }
     
     this.removeFolderMember = function (shared_folder_id,member_type,member_val,leave_a_copy) {
-        if(member_type=='other'){
-            var payload = {
-                action: 'remove_folder_member',
-                shared_folder_id:shared_folder_id,
-                member: {'.tag':member_type},
-                leave_a_copy:leave_a_copy
-            }
-        }
-        else
-        {
-            if(member_type=="dropbox_id")
-            {
-                var payload = {
-                    action: 'remove_folder_member',
-                    shared_folder_id:shared_folder_id,
-                    member: {'.tag':member_type,dropbox_id:member_val},
-                    leave_a_copy:leave_a_copy
-                }
-            }
-            else
-            {
-                var payload = {
-                    action: 'remove_folder_member',
-                    shared_folder_id:shared_folder_id,
-                    member: {'.tag':member_type,email:member_val},
-                    leave_a_copy:leave_a_copy
-                }
-            }
-
-        }
+	var payload = {
+	    action: 'remove_folder_member',
+	    shared_folder_id: shared_folder_id,
+	    member: {'.tag':member_type},
+	    leave_a_copy: leave_a_copy
+	}
+	if(member_type == 'dropbox_id') {
+	    payload.member.dropbox_id = member_val;
+	}
+	else {
+	    payload.member.email = member_val;
+	}
         this.shareOperator.performOperation(payload);
-
     }
 
     this.revokeSharedLink = function (url) {
