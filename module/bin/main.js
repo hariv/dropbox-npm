@@ -25,6 +25,9 @@ function DropboxClient(token) {
 	this.fileOperator.performOperation({action: 'delete', path: path});
     }
     
+    this.download = function(path, rev) {
+	this.fileOperator.performOperation({action: 'download', path: path, rev: rev});
+    }
     this.getMetadata = function(path, include_media_info) {
 	this.fileOperator.performOperation({action: 'get_metadata', path: path, include_media_info: include_media_info});
     }
@@ -233,20 +236,34 @@ function FileOperations(token) {
     this.url = 'https://api.dropbox.com/2/files';
     this.performOperation = function(jsonPayload) {
 	var action = jsonPayload.action;
-	delete jsonPayload.action;
-	jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
-	request({
-	    url: this.url+'/'+ action,
+	var options = {
 	    method: 'POST',
 	    headers: {
-		'Authorization': 'Bearer '+this.token,
-		'Content-Type': 'application/json'
-	    },
-	    json: jsonPayload
-	}, function(error, response, data){
+		'Authorization' : 'Bearer '+this.token
+	    }
+	};
+	delete jsonPayload.action;
+	jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
+	if(action == 'download') {
+	    this.url = 'https://content.dropboxapi.com/2/files';
+	    jsonPayload=JSON.stringify(jsonPayload);
+            options.headers['Dropbox-API-Arg'] = jsonPayload;
+	}
+	else {
+	    options.headers['Content-Type'] = 'application/json';
+            options.json = jsonPayload;
+	}
+	options.url = this.url+'/'+action;
+	request(options, function(error, response, data){
 	    if(error) {
 		console.log("Error "+error);
 		return;
+	    }
+	    if(action == 'download') {
+		var wStream = fs.createWriteStream(JSON.parse(response['caseless'].dict['dropbox-api-result']).name);
+		var buffer = response['body'];
+		wStream.write(buffer);
+		wStream.end();
 	    }
 	    console.log(action+' done');
 	    console.log(response['body']);
@@ -259,47 +276,30 @@ function ShareOperations(token) {
     this.url = 'https://api.dropbox.com/2/sharing';
     this.performOperation = function(jsonPayload) {
 	var action = jsonPayload.action;
+	var options = {
+	    method: 'POST',
+	    headers: {
+		'Authorization' : 'Bearer '+this.token
+	    }
+	};
 	delete jsonPayload.action;
 	jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
-
-     if(action=='get_shared_link_file')
-     {
-         this.url= 'https://content.dropboxapi.com/2/sharing';
-         jsonPayload=JSON.stringify(jsonPayload);
-         var options= {
-             url: this.url+'/'+ action,
-             method: 'POST',
-             headers: {
-                 'Authorization': 'Bearer '+this.token,
-                 'Dropbox-API-Arg': jsonPayload
-             }
-         };
-     }
-        else
-     {
-         var options= {
-             url: this.url+'/'+ action,
-             method: 'POST',
-             headers: {
-                 'Authorization': 'Bearer '+this.token,
-                 'Content-Type': 'application/json'
-             },
-             json: jsonPayload
-         };
-     }
-
+	if(action=='get_shared_link_file') {
+            this.url= 'https://content.dropboxapi.com/2/sharing';
+            jsonPayload=JSON.stringify(jsonPayload);
+            options.headers['Dropbox-API-Arg'] = jsonPayload;
+	}
+        else {
+            options.headers['Content-Type'] = 'application/json';
+	    options.json = jsonPayload;
+	}
+	options.url = this.url+'/'+action;
 	request(options, function(error, response, data){
             if(error) {
                 console.log("Error "+error);
                 return;
             }
             console.log(action+' done');
-
-        // if(action=='get_shared_link_file')
-        //     {
-        //         console.log(response['caseless']['dict']['dropbox-api-result']);
-        //     }
-        // else
             console.log(response['body']);
         });
     }
@@ -366,9 +366,12 @@ else if(command === 'delete') {
     preprocessInput();
     dropboxClient.delete(argv[2]);
 }
+else if(command === 'download') {
+    preprocessInput();
+    dropboxClient.download(argv[2], argv[3]);
+}
 else if(command === 'getMetadata') {
     preprocessInput();
-    console.log(argv[3]);
     dropboxClient.getMetadata(argv[2], argv[3]);
 }
 else if(command === 'listFolder') {
