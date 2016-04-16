@@ -276,9 +276,9 @@ function FileOperations(token) {
             options.headers['Content-Type'] = 'application/octet-stream';
 
         var fileStream = fs.createReadStream('/Users/shiv/Desktop/playground.js'),
-            fileBuffer = fs.readFile('/Users/shiv/Desktop/playground.js', function (err,data) {
-                options.data=data;
-            });
+        fileBuffer = fs.readFile('/Users/shiv/Desktop/playground.js', function (err,data) {
+            options.data=data;
+        });
 
     }
 	else {
