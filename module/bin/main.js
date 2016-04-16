@@ -28,6 +28,22 @@ function DropboxClient(token) {
     this.download = function(path, rev) {
 	this.fileOperator.performOperation({action: 'download', path: path, rev: rev});
     }
+
+    this.getPreview = function(path, rev) {
+	this.fileOperator.performOperation({action: 'get_preview', path: path, rev: rev});
+    }
+    
+    this.getThumbnail = function(path, format, size) {
+	if(format && size)
+	    this.fileOperator.performOperation({action: 'get_thumbnail', path: path, format: {'.tag': format},  size: {'.tag': size}});
+	else if(format)
+	    this.fileOperator.performOperation({action: 'get_thumbnail', path: path, format: {'.tag': format}});
+	else if(size)
+	    this.fileOperator.performOperation({action: 'get_thumbmail', path: path, size: {'.tag': size}});
+	else
+	    this.fileOperator.performOperation({action: 'get_thumbnail', path: path});
+    }
+    
     this.getMetadata = function(path, include_media_info) {
 	this.fileOperator.performOperation({action: 'get_metadata', path: path, include_media_info: include_media_info});
     }
@@ -244,7 +260,7 @@ function FileOperations(token) {
 	};
 	delete jsonPayload.action;
 	jsonPayload = JSON.parse(JSON.stringify(jsonPayload));
-	if(action == 'download') {
+	if(action == 'download' || action == 'get_preview' || action == 'get_thumbnail') {
 	    this.url = 'https://content.dropboxapi.com/2/files';
 	    jsonPayload=JSON.stringify(jsonPayload);
             options.headers['Dropbox-API-Arg'] = jsonPayload;
@@ -258,12 +274,6 @@ function FileOperations(token) {
 	    if(error) {
 		console.log("Error "+error);
 		return;
-	    }
-	    if(action == 'download') {
-		var wStream = fs.createWriteStream(JSON.parse(response['caseless'].dict['dropbox-api-result']).name);
-		var buffer = response['body'];
-		wStream.write(buffer);
-		wStream.end();
 	    }
 	    console.log(action+' done');
 	    console.log(response['body']);
@@ -369,6 +379,14 @@ else if(command === 'delete') {
 else if(command === 'download') {
     preprocessInput();
     dropboxClient.download(argv[2], argv[3]);
+}
+else if(command === 'getPreview') {
+    preprocessInput();
+    dropboxClient.getPreview(argv[2], argv[3]);
+}
+else if(command === 'getThumbnail') {
+    preprocessInput();
+    dropboxClient.getThumbnail(argv[2], argv[3]);
 }
 else if(command === 'getMetadata') {
     preprocessInput();
