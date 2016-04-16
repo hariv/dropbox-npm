@@ -83,6 +83,10 @@ function DropboxClient(token) {
         this.fileOperator.performOperation(({action:'search',path:path,query:query,start:start,max_results:max_results,mode:mode}));
     }
 
+    this.upload = function (path, mode, autorename, client_modified, mute) {
+        this.fileOperator.performOperation(({action:'upload',path:path,autorename:autorename,client_modified:client_modified,mute:mute}));
+    }
+    
     // user operations
 
     this.getCurrentAccount = function () {
@@ -265,8 +269,20 @@ function FileOperations(token) {
 	    jsonPayload=JSON.stringify(jsonPayload);
             options.headers['Dropbox-API-Arg'] = jsonPayload;
 	}
+    else if(action == 'upload') {
+        this.url='https://content.dropboxapi.com/2/files';
+        jsonPayload=JSON.stringify(jsonPayload);
+            options.headers['Dropbox-API-Arg'] = jsonPayload;
+            options.headers['Content-Type'] = 'application/octet-stream';
+
+        var fileStream = fs.createReadStream('/Users/shiv/Desktop/playground.js'),
+            fileBuffer = fs.readFile('/Users/shiv/Desktop/playground.js', function (err,data) {
+                options.data=data;
+            });
+
+    }
 	else {
-	    options.headers['Content-Type'] = 'application/json';
+	        options.headers['Content-Type'] = 'application/json';
             options.json = jsonPayload;
 	}
 	options.url = this.url+'/'+action;
@@ -428,6 +444,11 @@ else if(command === 'restore') {
 else if(command === 'search') {
     preprocessInput();
     dropboxClient.search(argv[2], argv[3],argv[4],argv[5],argv[6]);
+}
+
+else if(command === 'upload') {
+    preprocessInput();
+    dropboxClient.upload(argv[2], argv[3],argv[4],argv[5],argv[6]);
 }
 
 //user commands
